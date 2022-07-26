@@ -5,6 +5,7 @@ import hydra.utils
 from omegaconf import OmegaConf, DictConfig
 from torch import nn
 import torch
+from multipledispatch import dispatch
 
 from slot_attention.paths import CONFIG
 from slot_attention.slot_attention_module import SlotAttentionModule
@@ -56,17 +57,17 @@ class SlotAttentionAE(nn.Module):
             recon_slots_output = (img_slots + 1.0) / 2.
         return dict(loss=loss, z=z, mask=masks, slot=recon_slots_output)
 
-    @overload
+    @dispatch(int, int, int)
     @classmethod
     def from_config(cls, dataset_width: int = 64, dataset_height: int = 64, max_num_objects: int = 5) -> 'SlotAttentionAE':
         model_config_path = CONFIG / 'slot_attention.yaml'
         model_config = OmegaConf.load(model_config_path)
-        model_config = model_config.merge_with_dotlist([f"dataset.width={dataset_width}",
+        model_config.merge_with_dotlist([f"dataset.width={dataset_width}",
                                                         f"dataset.height={dataset_height}",
                                                         f"dataset.max_num_objects={max_num_objects}"])
         return hydra.utils.instantiate(model_config.model)
 
-    @overload
+    @dispatch((None, str))
     @classmethod
     def from_config(cls, dataset_name: Literal[None, 'clevr_6', 'clevr_10'] = None):
         model_config_path = CONFIG / 'slot_attention.yaml'

@@ -6,37 +6,37 @@ from torch import nn
 
 class SlotAttentionModule(nn.Module):
 
-    def __init__(self, num_slots: int, channels_enc: int, dim: int, iters=3, eps=1e-8, hidden_dim=128):
+    def __init__(self, num_slots: int, channels_enc: int, latent_size: int, iters=3, eps=1e-8, hidden_dim=128):
         super().__init__()
         self.num_slots = num_slots
         self.iters = iters
         self.eps = eps
-        self.scale = dim ** -0.5
+        self.scale = latent_size ** -0.5
+        self.latent_size = latent_size
 
-        self.slots_mu = nn.Parameter(torch.rand(1, 1, dim))
-        self.slots_log_sigma = nn.Parameter(torch.randn(1, 1, dim))
+        self.slots_mu = nn.Parameter(torch.rand(1, 1, latent_size))
+        self.slots_log_sigma = nn.Parameter(torch.randn(1, 1, latent_size))
         with torch.no_grad():
-            limit = sqrt(6.0 / (1 + dim))
+            limit = sqrt(6.0 / (1 + latent_size))
             torch.nn.init.uniform_(self.slots_mu, -limit, limit)
             torch.nn.init.uniform_(self.slots_log_sigma, -limit, limit)
-        self.to_q = nn.Linear(dim, dim, bias=False)
-        self.to_k = nn.Linear(channels_enc, dim, bias=False)
-        self.to_v = nn.Linear(channels_enc, dim, bias=False)
+        self.to_q = nn.Linear(latent_size, latent_size, bias=False)
+        self.to_k = nn.Linear(channels_enc, latent_size, bias=False)
+        self.to_v = nn.Linear(channels_enc, latent_size, bias=False)
 
-        self.gru = nn.GRUCell(dim, dim)
+        self.gru = nn.GRUCell(latent_size, latent_size)
 
-        hidden_dim = max(dim, hidden_dim)
+        hidden_dim = max(latent_size, hidden_dim)
 
         self.mlp = nn.Sequential(
-            nn.Linear(dim, hidden_dim),
+            nn.Linear(latent_size, hidden_dim),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden_dim, dim)
+            nn.Linear(hidden_dim, latent_size)
         )
 
         self.norm_input = nn.LayerNorm(channels_enc, eps=0.001)
-        self.norm_slots = nn.LayerNorm(dim, eps=0.001)
-        self.norm_pre_ff = nn.LayerNorm(dim, eps=0.001)
-        self.dim = dim
+        self.norm_slots = nn.LayerNorm(latent_size, eps=0.001)
+        self.norm_pre_ff = nn.LayerNorm(latent_size, eps=0.001)
 
     def forward(self, inputs, num_slots=None):
         b, n, _ = inputs.shape
