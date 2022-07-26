@@ -1,18 +1,17 @@
-from dataclasses import dataclass, field
-from typing import List, Union, Literal, Dict, Iterable, Sequence, Optional, overload
+from dataclasses import dataclass
+from typing import Union, Literal, Optional
 
 import hydra.utils
-from omegaconf import OmegaConf, DictConfig
-from torch import nn
 import torch
 from multipledispatch import dispatch
+from omegaconf import OmegaConf, DictConfig
+from torch import nn
 
+from slot_attention.encoder_decoder import Encoder, Decoder
 from slot_attention.paths import CONFIG
 from slot_attention.slot_attention_module import SlotAttentionModule
-from slot_attention.encoder_decoder import Encoder, Decoder
 
 
-@dataclass(eq=False)
 class SlotAttentionAE(nn.Module):
     width: int
     height: int
@@ -25,14 +24,21 @@ class SlotAttentionAE(nn.Module):
     name: str = 'slot-attention'
     lossf = nn.MSELoss()
 
-    def __post_init__(self):
+    def __init__(self, width: int, height: int, encoder, decoder, slot_attention_module, input_channels: int = 3, w_broadcast = None, h_broadcast = None):
         super().__init__()
+        self.h_broadcast = h_broadcast
+        self.input_channels = input_channels
+        self.slot_attention_module = slot_attention_module
+        self.decoder = decoder
+        self.encoder = encoder
+        self.width = width
+        self.height = height
+        self.w_broadcast = w_broadcast
         if self.w_broadcast is None:
             self.w_broadcast = self.width
         if self.h_broadcast is None:
             self.h_broadcast = self.height
-        self.slot_attention = SlotAttentionModule(self.num_slots, self.encoder_params['channels'][-1], self.latent_size,
-                                                  self.attention_iters, self.eps, self.mlp_size)
+
     def spatial_broadcast(self, slot):
         slot = slot.unsqueeze(-1).unsqueeze(-1)
         return slot.repeat(1, 1, self.w_broadcast, self.h_broadcast)
@@ -57,31 +63,27 @@ class SlotAttentionAE(nn.Module):
             recon_slots_output = (img_slots + 1.0) / 2.
         return dict(loss=loss, z=z, mask=masks, slot=recon_slots_output)
 
-    @dispatch(int, int, int)
     @classmethod
-    def from_config(cls, dataset_width: int = 64, dataset_height: int = 64, max_num_objects: int = 5) -> 'SlotAttentionAE':
-        model_config_path = CONFIG / 'slot_attention.yaml'
-        model_config = OmegaConf.load(model_config_path)
-        model_config.merge_with_dotlist([f"dataset.width={dataset_width}",
-                                                        f"dataset.height={dataset_height}",
-                                                        f"dataset.max_num_objects={max_num_objects}"])
-        return hydra.utils.instantiate(model_config.model)
-
-    @dispatch((None, str))
-    @classmethod
-    def from_config(cls, dataset_name: Literal[None, 'clevr_6', 'clevr_10'] = None):
+    def from_config(cls, dataset_name: Literal[None, 'clevr_6', 'clevr_10'] = None, dataset_width: int = 64, dataset_height: int = 64, max_num_objects: int = 5):
         model_config_path = CONFIG / 'slot_attention.yaml'
         model_config = OmegaConf.load(model_config_path)
         if dataset_name is not None and dataset_name.startswith('clevr'):
             clevr_path = CONFIG / 'slot_attention-clevr.yaml'
             model_config = model_config.mergewith(OmegaConf.load(clevr_path))
-            width = 128
-            height = 128
+            dataset_width = 128
+            dataset_height = 128
             max_num_objects = 7 if dataset_name == 'clevr_6' else 11
-            model_config = model_config.merge_with_dotlist([f"dataset.width={width}",
-                                                            f"dataset.height={height}",
-                                                            f"dataset.max_num_objects={max_num_objects}"])
-
+            model_config.merge_with_dotlist([f"dataset.width={dataset_width}",
+                                             f"dataset.height={dataset_height}",
+                                             f"dataset.max_num_objects={max_num_objects}"])
+            return hydra.utils.instantiate(model_config.model)
+        elif dataset_name is None:
+            model_config.merge_with_dotlist([f"dataset.width={dataset_width}",
+                                             f"dataset.height={dataset_height}",
+                                             f"dataset.max_num_objects={max_num_objects}"])
+        else:
+            raise ValueError(f'{dataset_name} argument not start with "clevr" or is None')
+        return hydra.utils.instantiate(model_config.model)
 
     @classmethod
     def from_custom_config(cls, config: DictConfig):

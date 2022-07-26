@@ -6,13 +6,14 @@ from torch import nn
 
 class SlotAttentionModule(nn.Module):
 
-    def __init__(self, num_slots: int, channels_enc: int, latent_size: int, iters=3, eps=1e-8, hidden_dim=128):
+    def __init__(self, num_slots: int, channels_enc: int, latent_size: int, attention_iters=3, eps=1e-8, mlp_size=128):
         super().__init__()
         self.num_slots = num_slots
-        self.iters = iters
+        self.attention_iters = attention_iters
         self.eps = eps
         self.scale = latent_size ** -0.5
         self.latent_size = latent_size
+        self.mlp_size = mlp_size
 
         self.slots_mu = nn.Parameter(torch.rand(1, 1, latent_size))
         self.slots_log_sigma = nn.Parameter(torch.randn(1, 1, latent_size))
@@ -26,12 +27,12 @@ class SlotAttentionModule(nn.Module):
 
         self.gru = nn.GRUCell(latent_size, latent_size)
 
-        hidden_dim = max(latent_size, hidden_dim)
+        mlp_size = max(latent_size, mlp_size)
 
         self.mlp = nn.Sequential(
-            nn.Linear(latent_size, hidden_dim),
+            nn.Linear(latent_size, mlp_size),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden_dim, latent_size)
+            nn.Linear(mlp_size, latent_size)
         )
 
         self.norm_input = nn.LayerNorm(channels_enc, eps=0.001)
@@ -49,7 +50,7 @@ class SlotAttentionModule(nn.Module):
         inputs = self.norm_input(inputs)
         k, v = self.to_k(inputs), self.to_v(inputs)
 
-        for _ in range(self.iters):
+        for _ in range(self.attention_iters):
             slots_prev = slots
 
             slots = self.norm_slots(slots)

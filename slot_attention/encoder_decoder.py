@@ -2,9 +2,9 @@ from typing import List, Iterable, Tuple, Union, Sequence
 
 from torch import nn
 
-from models.shared.sequential_cnn import ActivationFunctionEnum, make_sequential_from_config
-from models.slot_attention.positional_embedding import PositionalEmbedding
-from models.nn_utils import calc_output_shape_conv
+from slot_attention.shared.sequential_cnn import make_sequential_from_config
+from slot_attention.positional_embedding import PositionalEmbedding
+from slot_attention.nn_utils import calc_output_shape_conv, ActivationFunctionEnum
 
 class Encoder(nn.Module):
 

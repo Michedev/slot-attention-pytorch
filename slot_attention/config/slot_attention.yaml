@@ -94,3 +94,6 @@ model:
     mlp_size: 128
   w_broadcast: ${dataset.width}
   h_broadcast: ${dataset.height}
+  width: ${dataset.width}
+  height: ${dataset.height}
+  input_channels: 3
