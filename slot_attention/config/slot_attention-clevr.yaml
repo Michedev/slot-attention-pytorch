@@ -1,0 +1,104 @@
+model:
+  w_broadcast: 8
+  h_broadcast: 8
+  encoder:
+    _target_: torch.nn.Sequential
+    _args_:
+      _target_: torch.nn.Sequential
+      _args_:
+        - _target_: torch.nn.Conv2d
+          in_channels: ${model.input_channels}
+          out_channels: 64
+          kernel_size: 5
+          padding: 2
+        - _target_: torch.nn.ReLU
+        - _target_: torch.nn.Conv2d
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 5
+          padding: 2
+          stride: 2
+        - _target_: torch.nn.ReLU
+        - _target_: torch.nn.Conv2d
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 5
+          padding: 2
+          stride: 2
+        - _target_: torch.nn.ReLU
+        - _target_: torch.nn.Conv2d
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 5
+          padding: 2
+        - _target_: torch.nn.ReLU
+        - _target_: slot_attention.positional_embedding.PositionalEmbedding
+          width: ${dataset.width}
+          height: ${dataset.height}
+          channels: 64
+        - _target_: torch.nn.Flatten
+          start_dim: 2
+          end_dim: 3
+        - _target_: torch.nn.GroupNorm
+          num_groups: 1
+          num_channels: 64
+          affine: true
+          eps: 0.001
+        - _target_: torch.nn.Conv2d
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 1
+        - _target_: torch.nn.ReLU
+        - _target_: torch.nn.Conv2d
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 1
+  decoder:
+    _target_: torch.nn.Sequential
+    _args_:
+      - _target_: torch.nn.Conv2dTranspose
+        in_channels: ${model.slot_attention_module.latent_space}
+        out_channels: 64
+        kernel: 5
+        padding: 2
+        stride: 2
+        output_padding: 1
+      - _target_: torch.nn.ReLU
+
+      - _target_: torch.nn.Conv2dTranspose
+        in_channels: 64
+        out_channels: 64
+        kernel: 5
+        padding: 2
+        stride: 2
+        output_padding: 1
+      - _target_: torch.nn.ReLU
+
+      - _target_: torch.nn.Conv2dTranspose
+        in_channels: 64
+        out_channels: 64
+        kernel: 5
+        padding: 2
+        stride: 2
+        output_padding: 1
+      - _target_: torch.nn.ReLU
+
+      - _target_: torch.nn.Conv2dTranspose
+        in_channels: 64
+        out_channels: 64
+        kernel: 5
+        padding: 2
+        stride: 1
+        output_padding: 0
+      - _target_: torch.nn.ReLU
+
+      - _target_: torch.nn.Conv2dTranspose
+        in_channels: 64
+        out_channels: 4
+        kernel: 3
+        padding: 1
+        stride: 1
+        output_padding: 0
+
+optimizer:
+  lr: 0.0002
