@@ -11,16 +11,6 @@ from slot_attention.slot_attention_module import SlotAttentionModule
 
 
 class SlotAttentionAE(nn.Module):
-    width: int
-    height: int
-    encoder: Union[Encoder, torch.nn.Module]
-    decoder: Union[Decoder, torch.nn.Module]
-    slot_attention_module: SlotAttentionModule
-    input_channels: int = 3
-    w_broadcast: Optional[int] = None
-    h_broadcast: Optional[int] = None
-    name: str = 'slot-attention'
-    lossf = nn.MSELoss()
 
     def __init__(self, width: int, height: int, encoder: Union[nn.Module, Encoder], decoder: Union[nn.Module, Decoder],
                  slot_attention_module: Union[nn.Module, SlotAttentionModule], input_channels: int = 3,
@@ -34,6 +24,7 @@ class SlotAttentionAE(nn.Module):
         self.input_channels = input_channels
         self.w_broadcast = w_broadcast
         self.h_broadcast = h_broadcast
+        self.lossf = nn.MSELoss()
         if self.w_broadcast is None:
             self.w_broadcast = self.width
         if self.h_broadcast is None:
