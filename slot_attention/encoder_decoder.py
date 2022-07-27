@@ -1,10 +1,11 @@
-from typing import List, Iterable, Tuple, Union, Sequence
+from typing import Union, Sequence
 
 from torch import nn
 
-from slot_attention.shared.sequential_cnn import make_sequential_from_config
-from slot_attention.positional_embedding import PositionalEmbedding
 from slot_attention.nn_utils import calc_output_shape_conv, ActivationFunctionEnum
+from slot_attention.positional_embedding import PositionalEmbedding
+from slot_attention.shared.sequential_cnn import make_sequential_from_config
+
 
 class Encoder(nn.Module):
 

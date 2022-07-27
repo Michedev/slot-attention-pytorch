@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import List, Literal, Union, Dict
 
 import torch
-from torch import nn as nn
 from models.nn_utils import get_activation_module
 from models.shared.sequential_cnn import make_sequential_from_config
+from torch import nn as nn
 
 
 class EncoderParams(Dict):

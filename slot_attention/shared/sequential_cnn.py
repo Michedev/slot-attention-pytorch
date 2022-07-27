@@ -1,9 +1,10 @@
-from typing import Union, Literal, List
+from typing import Union, List
 
 from omegaconf import ListConfig
 from torch import nn as nn
 
 from slot_attention.nn_utils import get_activation_module, ActivationFunctionEnum
+
 
 def _scalars_to_list(params: dict):
     param_names = list(params.keys())
