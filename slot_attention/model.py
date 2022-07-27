@@ -24,16 +24,18 @@ class SlotAttentionAE(nn.Module):
     name: str = 'slot-attention'
     lossf = nn.MSELoss()
 
-    def __init__(self, width: int, height: int, encoder, decoder, slot_attention_module, input_channels: int = 3, w_broadcast = None, h_broadcast = None):
+    def __init__(self, width: int, height: int, encoder: Union[nn.Module, Encoder], decoder: Union[nn.Module, Decoder],
+                 slot_attention_module: Union[nn.Module, SlotAttentionModule], input_channels: int = 3,
+                 w_broadcast: Optional[int] = None, h_broadcast: Optional[int] = None):
         super().__init__()
-        self.h_broadcast = h_broadcast
-        self.input_channels = input_channels
-        self.slot_attention_module = slot_attention_module
-        self.decoder = decoder
-        self.encoder = encoder
         self.width = width
         self.height = height
+        self.encoder = encoder
+        self.decoder = decoder
+        self.slot_attention_module = slot_attention_module
+        self.input_channels = input_channels
         self.w_broadcast = w_broadcast
+        self.h_broadcast = h_broadcast
         if self.w_broadcast is None:
             self.w_broadcast = self.width
         if self.h_broadcast is None:
@@ -87,6 +89,6 @@ class SlotAttentionAE(nn.Module):
 
     @classmethod
     def from_custom_config(cls, config: DictConfig):
-        model = hydra.utils.instantiate(config)
+        model = hydra.utils.instantiate(config.model)
         assert isinstance(model, SlotAttentionAE)
         return model
