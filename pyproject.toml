@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "slot-attention"
+name = "slot-attention-pytorch"
 version = "0.1.0"
-description = ""
+description = "Pytorch slot-attention implementation of Slot Attention"
 authors = ["mikedev <mik3dev@gmail.com>"]
 
 [tool.poetry.dependencies]

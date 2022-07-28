@@ -11,6 +11,5 @@ def test_forward():
     prediction = model(dummy_batch)
 
     assert isinstance(prediction, dict)
-
     assert sorted(prediction.keys()) == sorted(['z', 'loss', 'mask', 'slot'])
 
