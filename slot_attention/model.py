@@ -8,13 +8,14 @@ from torch import nn
 from slot_attention.encoder_decoder import Encoder, Decoder
 from slot_attention.paths import CONFIG
 from slot_attention.slot_attention_module import SlotAttentionModule
+from torch.nn.modules.module import Module
 
 
 class SlotAttentionAE(nn.Module):
 
     def __init__(self, width: int, height: int, encoder: Union[nn.Module, Encoder], decoder: Union[nn.Module, Decoder],
                  slot_attention_module: Union[nn.Module, SlotAttentionModule], input_channels: int = 3,
-                 w_broadcast: Optional[int] = None, h_broadcast: Optional[int] = None):
+                 w_broadcast: Optional[int] = None, h_broadcast: Optional[int] = None) -> None:
         super().__init__()
         self.width = width
         self.height = height
@@ -30,22 +31,23 @@ class SlotAttentionAE(nn.Module):
         if self.h_broadcast is None:
             self.h_broadcast = self.height
 
-    def spatial_broadcast(self, slot):
+    def spatial_broadcast(self, slot: torch.Tensor) -> torch.Tensor:
         slot = slot.unsqueeze(-1).unsqueeze(-1)
         return slot.repeat(1, 1, self.w_broadcast, self.h_broadcast)
 
-    def forward(self, x) -> dict:
+    def forward(self, x: torch.Tensor) -> dict:
         with torch.no_grad():
             x = x * 2.0 - 1.0
         encoded = self.encoder(x)
         encoded = encoded.permute(0, 2, 1)
-        z = self.slot_attention(encoded)
+        z = self.slot_attention_module(encoded)
         bs = z.size(0)
         slots = z.flatten(0, 1)
         slots = self.spatial_broadcast(slots)
-        img_slots, masks = self.decoder(slots)
-        img_slots = img_slots.view(bs, self.num_slots, 3, self.width, self.height)
-        masks = masks.view(bs, self.num_slots, 1, self.width, self.height)
+        slots_masks = self.decoder(slots)
+        img_slots, masks = slots_masks[:, :3], slots_masks[:, 3:]
+        img_slots = img_slots.view(bs, self.slot_attention_module.num_slots, 3, self.width, self.height)
+        masks = masks.view(bs, self.slot_attention_module.num_slots, 1, self.width, self.height)
         masks = masks.softmax(dim=1)
         recon_slots_mask = img_slots * masks
         recon_img = recon_slots_mask.sum(dim=1)
@@ -55,7 +57,8 @@ class SlotAttentionAE(nn.Module):
         return dict(loss=loss, z=z, mask=masks, slot=recon_slots_output)
 
     @classmethod
-    def from_config(cls, dataset_name: Literal[None, 'clevr_6', 'clevr_10'] = None, dataset_width: int = 64, dataset_height: int = 64, max_num_objects: int = 5):
+    def from_config(cls, dataset_name: Literal[None, 'clevr_6', 'clevr_10'] = None,
+                    dataset_width: int = 64, dataset_height: int = 64, max_num_objects: int = 5) -> 'SlotAttentionAE':
         model_config_path = CONFIG / 'slot_attention.yaml'
         model_config = OmegaConf.load(model_config_path)
         if dataset_name is not None and dataset_name.startswith('clevr'):
@@ -77,7 +80,7 @@ class SlotAttentionAE(nn.Module):
         return hydra.utils.instantiate(model_config.model)
 
     @classmethod
-    def from_custom_config(cls, config: DictConfig):
+    def from_custom_config(cls, config: DictConfig) -> 'SlotAttentionAE':
         model = hydra.utils.instantiate(config.model)
         assert isinstance(model, SlotAttentionAE)
         return model

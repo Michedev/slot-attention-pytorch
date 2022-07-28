@@ -64,7 +64,7 @@ def test_init_slot_attention_different_dataset_specs():
 
 
 def test_init_slot_attention_custom_specs():
-    custom_config = """
+    custom_config: str = """
     dataset:
       width: 32
       height: 32

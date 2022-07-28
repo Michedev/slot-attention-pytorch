@@ -4,7 +4,7 @@ from torch import nn
 
 class PositionalEmbedding(nn.Module):
 
-    def __init__(self, width, height, channels):
+    def __init__(self, width: int, height: int, channels: int) -> None:
         super().__init__()
         east = torch.linspace(0, 1, height).repeat(width)
         west = torch.linspace(1, 0, height).repeat(width)
@@ -19,7 +19,7 @@ class PositionalEmbedding(nn.Module):
         self.channels_map = nn.Conv2d(4, channels, kernel_size=1)
         self.register_buffer('linear_position_embedding', linear_pos_embedding)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         bs_linear_position_embedding = self.linear_position_embedding.expand(x.size(0), 4, x.size(2), x.size(3))
         x += self.channels_map(bs_linear_position_embedding)
         return x

@@ -1,4 +1,4 @@
-from typing import Union, Sequence
+from typing import Union, Sequence, List
 
 from torch import nn
 
@@ -26,8 +26,8 @@ class Encoder(nn.Module):
         output_width, output_height = calc_output_shape_conv(width, height, kernels, paddings, strides)
         self.pos_embedding = PositionalEmbedding(output_width, output_height, output_channels)
         self.lnorm = nn.GroupNorm(1, output_channels, affine=True, eps=0.001)
-        self.conv_1x1 = [nn.Conv1d(output_channels, output_channels, kernel_size=1), nn.ReLU(inplace=True),
-                         nn.Conv1d(output_channels, output_channels, kernel_size=1)]
+        self.conv_1x1: List[nn.Module] = [nn.Conv1d(output_channels, output_channels, kernel_size=1), nn.ReLU(inplace=True),
+                                          nn.Conv1d(output_channels, output_channels, kernel_size=1)]
         self.conv_1x1 = nn.Sequential(*self.conv_1x1)
 
     def forward(self, x):

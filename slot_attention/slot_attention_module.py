@@ -6,7 +6,9 @@ from torch import nn
 
 class SlotAttentionModule(nn.Module):
 
-    def __init__(self, num_slots: int, channels_enc: int, latent_size: int, attention_iters=3, eps=1e-8, mlp_size=128):
+    def __init__(self, num_slots: int, channels_enc: int, latent_size: int, attention_iters: float = 3,
+                 eps: float = 1e-8,
+                 mlp_size: int = 128) -> None:
         super().__init__()
         self.num_slots = num_slots
         self.attention_iters = attention_iters
@@ -39,7 +41,7 @@ class SlotAttentionModule(nn.Module):
         self.norm_slots = nn.LayerNorm(latent_size, eps=0.001)
         self.norm_pre_ff = nn.LayerNorm(latent_size, eps=0.001)
 
-    def forward(self, inputs, num_slots=None):
+    def forward(self, inputs: torch.Tensor, num_slots: None = None) -> torch.Tensor:
         b, n, _ = inputs.shape
         n_s = num_slots if num_slots is not None else self.num_slots
 
@@ -63,11 +65,11 @@ class SlotAttentionModule(nn.Module):
             updates = torch.einsum('bjd,bij->bid', v, attn)
 
             slots = self.gru(
-                updates.reshape(-1, self.dim),
-                slots_prev.reshape(-1, self.dim)
+                updates.reshape(-1, self.latent_size),
+                slots_prev.reshape(-1, self.latent_size)
             )
 
-            slots = slots.reshape(b, -1, self.dim)
+            slots = slots.reshape(b, -1, self.latent_size)
             slots = slots + self.mlp(self.norm_pre_ff(slots))
 
         return slots
