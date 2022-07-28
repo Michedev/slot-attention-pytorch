@@ -6,14 +6,14 @@
 1) Install through pip
 
 
-    pip install slot-attention-pytorch
+       pip install slot-attention-pytorch
 
 
 
 2) Clone the repository
    
 
-    git clone git@github.com:Michedev/slot-attention-pytorch.git
+       git clone git@github.com:Michedev/slot-attention-pytorch.git
 
 ## How to use
 
