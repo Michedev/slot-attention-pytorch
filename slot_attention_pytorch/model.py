@@ -5,9 +5,9 @@ import torch
 from omegaconf import OmegaConf, DictConfig
 from torch import nn
 
-from slot_attention.encoder_decoder import Encoder, Decoder
-from slot_attention.paths import CONFIG
-from slot_attention.slot_attention_module import SlotAttentionModule
+from slot_attention_pytorch.encoder_decoder import Encoder, Decoder
+from slot_attention_pytorch.paths import CONFIG
+from slot_attention_pytorch.slot_attention_module import SlotAttentionModule
 
 
 class SlotAttentionAE(nn.Module):

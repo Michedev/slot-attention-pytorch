@@ -1,6 +1,6 @@
 import torch
 
-from slot_attention.model import SlotAttentionAE
+from slot_attention_pytorch.model import SlotAttentionAE
 
 
 def test_forward():

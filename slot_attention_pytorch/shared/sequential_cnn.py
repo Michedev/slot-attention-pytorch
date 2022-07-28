@@ -3,7 +3,7 @@ from typing import Union, List
 from omegaconf import ListConfig
 from torch import nn as nn
 
-from slot_attention.nn_utils import get_activation_module, ActivationFunctionEnum
+from slot_attention_pytorch.nn_utils import get_activation_module, ActivationFunctionEnum
 
 
 def _scalars_to_list(params: dict):

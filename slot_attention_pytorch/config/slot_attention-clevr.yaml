@@ -32,7 +32,7 @@ model:
           kernel_size: 5
           padding: 2
         - _target_: torch.nn.ReLU
-        - _target_: slot_attention.positional_embedding.PositionalEmbedding
+        - _target_: slot_attention_pytorch.positional_embedding.PositionalEmbedding
           width: ${dataset.width}
           height: ${dataset.height}
           channels: 64

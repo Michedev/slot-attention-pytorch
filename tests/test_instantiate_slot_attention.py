@@ -2,8 +2,8 @@ import omegaconf
 import torch.nn as nn
 from omegaconf import OmegaConf, DictConfig
 
-from slot_attention.model import SlotAttentionAE
-from slot_attention.positional_embedding import PositionalEmbedding
+from slot_attention_pytorch.model import SlotAttentionAE
+from slot_attention_pytorch.positional_embedding import PositionalEmbedding
 
 
 def test_init_slot_attention():
@@ -70,7 +70,7 @@ def test_init_slot_attention_custom_specs():
       height: 32
       max_num_objects: 3
     model:
-      _target_: slot_attention.model.SlotAttentionAE
+      _target_: slot_attention_pytorch.model.SlotAttentionAE
       encoder:
         _target_: torch.nn.Sequential
         _args_:
@@ -92,7 +92,7 @@ def test_init_slot_attention_custom_specs():
             kernel_size: 5
             padding: 2
           - _target_: torch.nn.ReLU
-          - _target_: slot_attention.positional_embedding.PositionalEmbedding
+          - _target_: slot_attention_pytorch.positional_embedding.PositionalEmbedding
             width: ${dataset.width}
             height: ${dataset.height}
             channels: 16
@@ -116,7 +116,7 @@ def test_init_slot_attention_custom_specs():
       decoder:
         _target_: torch.nn.Sequential
         _args_:
-          - _target_: slot_attention.positional_embedding.PositionalEmbedding
+          - _target_: slot_attention_pytorch.positional_embedding.PositionalEmbedding
             width: ${dataset.width}
             height: ${dataset.height}
             channels: 16
@@ -144,7 +144,7 @@ def test_init_slot_attention_custom_specs():
             kernel_size: 3
             padding: 1
       slot_attention_module:
-        _target_: slot_attention.slot_attention_module.SlotAttentionModule
+        _target_: slot_attention_pytorch.slot_attention_module.SlotAttentionModule
         num_slots: ${dataset.max_num_objects}
         channels_enc: 16
         latent_size: 16

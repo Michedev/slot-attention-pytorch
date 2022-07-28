@@ -5,7 +5,7 @@ optimizer:
   lr: 0.0004
 
 model:
-  _target_: slot_attention.model.SlotAttentionAE
+  _target_: slot_attention_pytorch.model.SlotAttentionAE
   encoder:
     _target_: torch.nn.Sequential
     _args_:
@@ -33,7 +33,7 @@ model:
         kernel_size: 5
         padding: 2
       - _target_: torch.nn.ReLU
-      - _target_: slot_attention.positional_embedding.PositionalEmbedding
+      - _target_: slot_attention_pytorch.positional_embedding.PositionalEmbedding
         width: ${dataset.width}
         height: ${dataset.height}
         channels: 32
@@ -57,7 +57,7 @@ model:
   decoder:
     _target_: torch.nn.Sequential
     _args_:
-      - _target_: slot_attention.positional_embedding.PositionalEmbedding
+      - _target_: slot_attention_pytorch.positional_embedding.PositionalEmbedding
         width: ${dataset.width}
         height: ${dataset.height}
         channels: ${model.slot_attention_module.latent_size}
@@ -85,7 +85,7 @@ model:
         kernel_size: 3
         padding: 1
   slot_attention_module:
-    _target_: slot_attention.slot_attention_module.SlotAttentionModule
+    _target_: slot_attention_pytorch.slot_attention_module.SlotAttentionModule
     num_slots: ${dataset.max_num_objects}
     channels_enc: 32
     latent_size: 64
