@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import List, Literal, Union, Dict
 
 import torch
-from models.nn_utils import get_activation_module
-from models.shared.sequential_cnn import make_sequential_from_config
+from slot_attention.nn_utils import get_activation_module
+from slot_attention.shared.sequential_cnn import make_sequential_from_config
 from torch import nn as nn
 
 

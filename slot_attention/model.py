@@ -8,7 +8,6 @@ from torch import nn
 from slot_attention.encoder_decoder import Encoder, Decoder
 from slot_attention.paths import CONFIG
 from slot_attention.slot_attention_module import SlotAttentionModule
-from torch.nn.modules.module import Module
 
 
 class SlotAttentionAE(nn.Module):
